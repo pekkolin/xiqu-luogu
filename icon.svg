@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#c9362d"/>
+      <stop offset="100%" stop-color="#871914"/>
+    </linearGradient>
+  </defs>
+  <rect width="192" height="192" rx="38" fill="url(#bg)"/>
+  <rect x="10" y="10" width="172" height="172" rx="30" fill="none" stroke="#f2cf83" stroke-width="5" stroke-opacity="0.75"/>
+  <text x="96" y="128" text-anchor="middle" fill="#fff6e5" font-size="108" font-weight="700" font-family="'Songti SC','STSong','Noto Serif SC','SimSun',serif">锣</text>
+</svg>

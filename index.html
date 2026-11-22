@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="戏曲锣鼓">
+  <meta name="theme-color" content="#101116">
+  <title>戏曲锣鼓 · 电子打击垫</title>
+  <link rel="icon" type="image/svg+xml" href="icon.svg">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <!-- 顶部主导航栏 -->
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-seal" aria-hidden="true">锣</span>
+        <div class="brand-text">
+          <h1>戏曲锣鼓</h1>
+          <span class="brand-sub">电子打击垫</span>
+        </div>
+      </div>
+
+      <div class="topbar-controls">
+        <!-- 预设选择 -->
+        <div class="control-group preset-group">
+          <select id="presetSelect" class="select-input" aria-label="选择打击垫预设"></select>
+          <button id="btnNewPreset" class="icon-btn" title="基于当前布局另存为新方案" aria-label="新建方案">＋</button>
+        </div>
+
+        <!-- 空间混响 -->
+        <div class="segmented" role="group" aria-label="空间混响">
+          <button class="seg-btn" data-reverb="dry">干声</button>
+          <button class="seg-btn active" data-reverb="room">排练</button>
+          <button class="seg-btn" data-reverb="stage">戏台</button>
+        </div>
+
+        <!-- 主音量 -->
+        <div class="control-group volume-group" title="主音量">
+          <span class="vol-icon" aria-hidden="true">🔊</span>
+          <input id="masterVolume" type="range" min="0" max="1.2" step="0.02" value="0.85" aria-label="主音量">
+        </div>
+
+        <!-- 紧急止音 -->
+        <button id="btnChoke" class="btn btn-ghost" title="立刻消除长尾锣钹余音 (快捷键: 空格 Space)">
+          止音 <kbd class="inline-kbd">Space</kbd>
+        </button>
+
+        <!-- 编辑模式切换 -->
+        <button id="btnEditMode" class="btn btn-primary" aria-pressed="false">
+          <span class="edit-dot"></span>
+          <span id="editModeText">自定义编辑</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- 编辑模式专属工具条（仅编辑模式展开） -->
+    <section id="editToolbar" class="edit-toolbar hidden" aria-label="自定义布局工具">
+      <div class="edit-toolbar-row">
+        <div class="stepper-group">
+          <span class="tool-label">行数</span>
+          <button id="btnRowDec" class="step-btn" aria-label="减少行数">−</button>
+          <span id="rowCountVal" class="step-val">4</span>
+          <button id="btnRowInc" class="step-btn" aria-label="增加行数">＋</button>
+        </div>
+
+        <div class="stepper-group">
+          <span class="tool-label">列数</span>
+          <button id="btnColDec" class="step-btn" aria-label="减少列数">−</button>
+          <span id="colCountVal" class="step-val">4</span>
+          <button id="btnColInc" class="step-btn" aria-label="增加列数">＋</button>
+        </div>
+
+        <div class="divider-v"></div>
+
+        <button id="btnSwapMode" class="btn btn-sm btn-ghost" aria-pressed="false" title="点击两个按键互换位置">
+          ⇄ 互换位置
+        </button>
+        <button id="btnRenamePreset" class="btn btn-sm btn-ghost">重命名方案</button>
+        <button id="btnDeletePreset" class="btn btn-sm btn-ghost btn-danger-text hidden">删除方案</button>
+        <button id="btnResetPreset" class="btn btn-sm btn-ghost">恢复默认</button>
+
+        <div class="divider-v"></div>
+
+        <button id="btnExportJson" class="btn btn-sm btn-ghost" title="导出当前配置为 JSON 文件">导出配置</button>
+        <button id="btnImportJson" class="btn btn-sm btn-ghost" title="导入 JSON 配置文件">导入配置</button>
+        <input id="importFileInput" type="file" accept=".json,application/json" class="hidden">
+
+        <div class="spacer"></div>
+
+        <label class="toggle-chip">
+          <input id="chkShowKeys" type="checkbox" checked>
+          <span>键位提示</span>
+        </label>
+        <label class="toggle-chip">
+          <input id="chkShowSubs" type="checkbox" checked>
+          <span>乐器标注</span>
+        </label>
+      </div>
+      <div id="editHintBar" class="edit-hint">
+        点击任意打击垫可修改名称、配色、快捷键，并绑定最多 3 种戏曲乐器组合；修改会自动保存。
+      </div>
+    </section>
+
+    <!-- 核心打击垫主舞台 -->
+    <main class="stage">
+      <div id="padGrid" class="pad-grid" role="application" aria-label="戏曲锣鼓打击垫"></div>
+    </main>
+
+    <!-- 底部可折叠锣鼓经速查条 -->
+    <footer class="bottom-bar">
+      <button id="btnToggleCheat" class="cheat-toggle" aria-expanded="false">
+        <span>📜 常用锣鼓经口诀速查（点击展开 / 收起）</span>
+        <span class="cheat-meta">支持多点触控 · 电脑键盘直击（中文输入法下亦可正常响应）</span>
+      </button>
+      <div id="cheatSheet" class="cheat-sheet hidden"></div>
+    </footer>
+  </div>
+
+  <!-- 打击垫编辑抽屉 / 弹窗 -->
+  <div id="editorBackdrop" class="drawer-backdrop hidden" aria-hidden="true"></div>
+  <aside id="padEditor" class="editor-drawer hidden" aria-label="编辑打击垫">
+    <div class="drawer-header">
+      <div>
+        <h2>编辑打击垫</h2>
+        <p id="editorPadIndex" class="drawer-sub">第 1 行 · 第 1 列</p>
+      </div>
+      <button id="btnCloseEditor" class="icon-btn" aria-label="关闭编辑面板">✕</button>
+    </div>
+
+    <div class="drawer-body">
+      <!-- 基本信息 -->
+      <div class="form-row-2">
+        <label class="field">
+          <span class="field-label">按键名称（主字）</span>
+          <input id="inputPadLabel" type="text" maxlength="10" placeholder="如：仓、才、台">
+        </label>
+        <label class="field">
+          <span class="field-label">副标题 / 注音（留空自动显示乐器）</span>
+          <input id="inputPadSub" type="text" maxlength="20" placeholder="如：大锣+铙钹">
+        </label>
+      </div>
+
+      <!-- 颜色选择 -->
+      <div class="field">
+        <span class="field-label">按键配色</span>
+        <div id="colorPalette" class="color-palette"></div>
+      </div>
+
+      <!-- 键盘快捷键绑定 + 止音选项 -->
+      <div class="form-row-2 align-center">
+        <div class="field">
+          <span class="field-label">电脑键盘快捷键</span>
+          <div class="key-bind-row">
+            <button id="btnBindKey" type="button" class="btn btn-keybind">未绑定</button>
+            <button id="btnClearKey" type="button" class="icon-btn" title="清除快捷键">✕</button>
+          </div>
+          <span id="keyBindHint" class="field-hint">点击按钮后按键盘任意键绑定</span>
+        </div>
+
+        <label class="choke-card">
+          <input id="chkPadChoke" type="checkbox">
+          <div>
+            <div class="choke-title">按下时止音</div>
+            <div class="choke-desc">立即静音前序长尾锣钹（模拟按锣 / 闷钹）</div>
+          </div>
+        </label>
+      </div>
+
+      <!-- 绑定乐器列表（最多 3 种） -->
+      <div class="field">
+        <div class="layers-header">
+          <span class="field-label">绑定乐器（最多 3 种组合）</span>
+          <button id="btnAddLayer" type="button" class="btn btn-sm btn-accent">＋ 添加乐器</button>
+        </div>
+        <div id="layersContainer" class="layers-list"></div>
+      </div>
+    </div>
+
+    <div class="drawer-footer">
+      <button id="btnPreviewPad" type="button" class="btn btn-gold">▶ 试听此按键</button>
+      <button id="btnDoneEditor" type="button" class="btn btn-primary">完成</button>
+    </div>
+  </aside>
+
+  <!-- 轻量 Toast 提示 -->
+  <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+
+  <script src="audio-engine.js"></script>
+  <script src="presets.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "name": "戏曲锣鼓 · 电子打击垫",
+  "short_name": "戏曲锣鼓",
+  "description": "支持多点触控与电脑键盘的戏曲电子锣鼓打击垫模拟器，内置18种戏曲打击乐音色与自定义锣鼓经组合键。",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#101116",
+  "theme_color": "#101116",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
